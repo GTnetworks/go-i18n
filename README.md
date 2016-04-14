@@ -23,13 +23,14 @@ package app
 import (
     "git.maze.io/maze/go-i18n"
     "github.com/revel/revel"
+    "golang.org/x/text/language"
 )
 
 var lang *i18n.I18N
 
 func init() {
     var err error
-    if lang, err = i18n.New(); err != nil {
+    if lang, err = i18n.New(language.English); err != nil {
         panic(err)
     }
 
@@ -45,13 +46,14 @@ package app
 import (
     "git.maze.io/maze/go-i18n"
     "github.com/flosch/pongo2"
+    "golang.org/x/text/language"
 )
 
 var lang *i18n.I18N
 
 func init() {
     var err error
-    if lang, err = i18n.New(); err != nil {
+    if lang, err = i18n.New(language.English); err != nil {
         panic(err)
     }
 
