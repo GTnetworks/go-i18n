@@ -21,12 +21,12 @@ var (
 
 type TranslationFile struct {
 	keys map[string]string
-	tag  language.Tag
+	lang language.Tag
 }
 
 func NewTranslationFile(name, lang string) (t *TranslationFile, err error) {
 	t = new(TranslationFile)
-	if t.tag, err = language.Parse(lang); err != nil {
+	if t.lang, err = language.Parse(lang); err != nil {
 		return
 	}
 
@@ -95,11 +95,11 @@ func (t *TranslationFile) parseYAML(lang string, b []byte) (err error) {
 	return
 }
 
-func (t *TranslationFile) Format(key string, args ...interface{}) string {
+func (t TranslationFile) Format(key string, args ...interface{}) string {
 	return fmt.Sprintf(t.Get(key), args...)
 }
 
-func (t *TranslationFile) Formats(keys []string, args ...interface{}) string {
+func (t TranslationFile) Formats(keys []string, args ...interface{}) string {
 	if keys == nil {
 		return ""
 	}
@@ -112,23 +112,23 @@ func (t *TranslationFile) Formats(keys []string, args ...interface{}) string {
 	return fmt.Sprintf(strings.Join(out, " "), args...)
 }
 
-func (t *TranslationFile) Get(key string) string {
+func (t TranslationFile) Get(key string) string {
 	if out, ok := t.keys[key]; ok {
 		return out
 	}
 	return key
 }
 
-func (t *TranslationFile) Has(key string) bool {
+func (t TranslationFile) Has(key string) bool {
 	return t.keys[key] != ""
 }
 
-func (t *TranslationFile) Len() int {
+func (t TranslationFile) Len() int {
 	return len(t.keys)
 }
 
-func (t *TranslationFile) Tag() language.Tag {
-	return t.tag
+func (t TranslationFile) Tag() language.Tag {
+	return t.lang
 }
 
 var _ Translation = (*TranslationFile)(nil)

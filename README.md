@@ -1,4 +1,4 @@
-# go-i18n - Internationalisation for Go
+# go-i18n - Internationalization for Go
 [![GoDoc](https://godoc.org/git.maze.io/maze/go-i18n?status.svg)](https://godoc.org/git.maze.io/maze/go-i18n)
 
 ## Getting started
@@ -31,6 +31,45 @@ interpreted as *Rails Application compatible* language files, see the [Rails
 Internationalization][] page for more details.
 
 [Rails Internationalization]: http://guides.rubyonrails.org/i18n.html
+
+## Basic project structure
+
+A basic project structure may look like follows:
+
+```Go
+package app
+
+import (
+    "git.maze.io/maze/go-i18n"
+
+    "github.com/revel/revel"
+
+    "golang.org/net/http"
+    "golang.org/x/text/language"
+)
+
+func main() {
+    var lang = i18n.New(language.English)
+
+    lang.Add(i18n.NewMap(language.English, map[string]string{
+        "hello": "Hello!",
+    }))
+
+    lang.Add(i18n.NewMap(language.Dutch, map[string]string{
+        "hello": "Hallo!",
+    }))
+
+    lang.Add(i18n.NewMap(language.SimplifiedChinese, map[string]string{
+        "hello": "你好！",
+    }))
+        
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        t := lang.Accept(r.Header().Get("Accept-Language"))
+        w.WriteString(t.Get("hello"))
+    })
+    http.ListenAndServe(":8000", nil)
+}
+```
 
 ## Integration
 
