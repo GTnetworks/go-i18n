@@ -12,7 +12,7 @@ func recovery() {
 }
 
 // TemplateFuncs generates a new template function map.
-func (i *I18N) TemplateFuncs() template.FuncMap {
+func (i *Internationalization) TemplateFuncs() template.FuncMap {
 	// Translation used in the template
 	var t = i.fallback
 
@@ -36,13 +36,13 @@ func (i *I18N) TemplateFuncs() template.FuncMap {
 	}
 }
 
-// TemplateNew is a wrapper for template.New that injects the I18N template functions.
-func (i *I18N) TemplateNew(name string) *template.Template {
+// TemplateNew is a wrapper for template.New that injects the Internationalization template functions.
+func (i *Internationalization) TemplateNew(name string) *template.Template {
 	return template.New(name).Funcs(i.TemplateFuncs())
 }
 
-// TemplateInject injects I18N template functions into the passed template function map.
-func (i *I18N) TemplateInject(f map[string]interface{}) {
+// TemplateInject injects Internationalization template functions into the passed template function map.
+func (i *Internationalization) TemplateInject(f map[string]interface{}) {
 	for k, v := range i.TemplateFuncs() {
 		f[k] = v
 	}

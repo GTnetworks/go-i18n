@@ -1,4 +1,4 @@
-// Package i18n provides internationalisation (i18n) for Go projects and various template engines.
+// Package i18n provides internationalization (i18n) for Go projects and various template engines.
 package i18n
 
 import (
@@ -8,27 +8,27 @@ import (
 
 var nullTranslation = NullTranslation{}
 
-type I18N struct {
+type Internationalization struct {
 	translation map[language.Tag]Translation
 	fallback    language.Tag
 }
 
-// New starts a new internationalisation instance.
-func New(fallback language.Tag) (*I18N, error) {
-	i := new(I18N)
+// New starts a new internationalization instance.
+func New(fallback language.Tag) (*Internationalization, error) {
+	i := new(Internationalization)
 	i.translation = make(map[language.Tag]Translation)
 	i.fallback = fallback
 	return i, nil
 }
 
 // Add a translation
-func (i *I18N) Add(t Translation) {
+func (i *Internationalization) Add(t Translation) {
 	i.translation[t.Tag()] = t
 }
 
 // Accept parses a HTTP Accept-Language header and returns a matching translation. May return a
 // NullTranslation if there is no matching language and the fallback language is also not available.
-func (i *I18N) Accept(accept string) Translation {
+func (i *Internationalization) Accept(accept string) Translation {
 	var (
 		s = i.Supported()
 		m = language.NewMatcher(append([]language.Tag{i.fallback}, s...))
@@ -46,10 +46,10 @@ func (i *I18N) Accept(accept string) Translation {
 }
 
 // Default returns the default (fallback) tag.
-func (i *I18N) Default() language.Tag { return i.fallback }
+func (i *Internationalization) Default() language.Tag { return i.fallback }
 
 // Languages returns a slice of supported languages, in their native translation.
-func (i *I18N) Languages() []string {
+func (i *Internationalization) Languages() []string {
 	var (
 		s = i.Supported()
 		l = make([]string, 0)
@@ -63,7 +63,7 @@ func (i *I18N) Languages() []string {
 }
 
 // Supported returns a slice of supported language tags.
-func (i *I18N) Supported() []language.Tag {
+func (i *Internationalization) Supported() []language.Tag {
 	var s = make([]language.Tag, 0)
 	for t := range i.translation {
 		s = append(s, t)
@@ -72,7 +72,7 @@ func (i *I18N) Supported() []language.Tag {
 }
 
 // Translate a phrase based on the selected language.
-func (i *I18N) Translate(lang, key string) string {
+func (i *Internationalization) Translate(lang, key string) string {
 	t, err := language.Parse(lang)
 	if err != nil {
 		t = i.fallback
@@ -80,7 +80,7 @@ func (i *I18N) Translate(lang, key string) string {
 	return i.translate(t, key)
 }
 
-func (i *I18N) translate(tag language.Tag, key string) string {
+func (i *Internationalization) translate(tag language.Tag, key string) string {
 	t, ok := i.translation[tag]
 	if !ok {
 		t, ok = i.translation[i.fallback]

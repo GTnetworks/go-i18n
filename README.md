@@ -1,6 +1,37 @@
 # go-i18n - Internationalisation for Go
 [![GoDoc](https://godoc.org/git.maze.io/maze/go-i18n?status.svg)](https://godoc.org/git.maze.io/maze/go-i18n)
 
+## Getting started
+
+If you want to use go-i18n in your project, you first have to make one or more
+translation maps. There are several formats supported.
+
+### [JSON](http://json.org/)
+
+All `.json` and `.js` files loaded with the `NewTemplateFile` loader are interpreted as a flat list of key-value pairs. Nested items are allowed and will be concatenated with a dot.
+
+For example:
+
+```JSON
+{
+  "foo": {
+    "bar": {
+      "testing"
+    }
+  }
+}
+```
+
+Here, `foo → bar` is accessible as `foo.bar` translation key.
+
+### [YAML](http://yaml.org/)
+
+All `.yml` and `.yaml` files loaded with the `NewTemplateFile` loader are
+interpreted as *Rails Application compatible* language files, see the [Rails
+Internationalization][] page for more details.
+
+[Rails Internationalization]: http://guides.rubyonrails.org/i18n.html
+
 ## Integration
 
 You can use i18n with many web frameworks, some of which are documented below.
