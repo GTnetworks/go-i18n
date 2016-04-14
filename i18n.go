@@ -1,4 +1,4 @@
-// Package i18n provides internationalisation (i18n) for Go projects and the pongo2 template engine.
+// Package i18n provides internationalisation (i18n) for Go projects and various template engines.
 package i18n
 
 import (
@@ -44,6 +44,9 @@ func (i *I18N) Accept(accept string) Translation {
 	}
 	return nullTranslation
 }
+
+// Default returns the default (fallback) tag.
+func (i *I18N) Default() language.Tag { return i.fallback }
 
 // Languages returns a slice of supported languages, in their native translation.
 func (i *I18N) Languages() []string {
