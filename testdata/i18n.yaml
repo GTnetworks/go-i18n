@@ -1,0 +1,8 @@
+---
+include:
+  - testdata/nl.yaml
+
+lang:
+  en:
+    welcome    : "welcome"
+    hello world: "hello world"
