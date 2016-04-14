@@ -42,8 +42,6 @@ package app
 import (
     "git.maze.io/maze/go-i18n"
 
-    "github.com/revel/revel"
-
     "golang.org/net/http"
     "golang.org/x/text/language"
 )
@@ -52,20 +50,20 @@ func main() {
     var lang = i18n.New(language.English)
 
     lang.Add(i18n.NewMap(language.English, map[string]string{
-        "hello": "Hello!",
+        "hello %s": "Hello %s!",
     }))
 
     lang.Add(i18n.NewMap(language.Dutch, map[string]string{
-        "hello": "Hallo!",
+        "hello %s": "Hallo %s!",
     }))
 
     lang.Add(i18n.NewMap(language.SimplifiedChinese, map[string]string{
-        "hello": "你好！",
+        "hello %s": "%s 你好！",
     }))
         
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         t := lang.Accept(r.Header().Get("Accept-Language"))
-        w.WriteString(t.Get("hello"))
+        t.Fprintf(w, "hello %s", r.RemoteAddr)
     })
     http.ListenAndServe(":8000", nil)
 }

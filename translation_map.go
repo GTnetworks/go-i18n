@@ -1,8 +1,9 @@
 package i18n
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
+	"io"
 
 	"golang.org/x/text/language"
 )
@@ -14,23 +15,6 @@ type TranslationMap struct {
 
 func NewMap(lang language.Tag, keys map[string]string) TranslationMap {
 	return TranslationMap{keys, lang}
-}
-
-func (t TranslationMap) Format(key string, args ...interface{}) string {
-	return fmt.Sprintf(key, args...)
-}
-
-func (t TranslationMap) Formats(keys []string, args ...interface{}) string {
-	if keys == nil {
-		return ""
-	}
-
-	var out = make([]string, len(keys))
-	for i, key := range keys {
-		out[i] = t.Get(key)
-	}
-
-	return fmt.Sprintf(strings.Join(out, " "), args...)
 }
 
 func (t TranslationMap) Get(key string) string {
@@ -50,6 +34,56 @@ func (t TranslationMap) Len() int {
 
 func (t TranslationMap) Tag() language.Tag {
 	return t.lang
+}
+
+func (t TranslationMap) Fprint(w io.Writer, a ...interface{}) (int, error) {
+	var out = make([]interface{}, len(a))
+
+	for i, arg := range a {
+		if key, ok := arg.(string); ok {
+			out[i] = t.Get(key)
+		} else {
+			out[i] = arg
+		}
+	}
+
+	return fmt.Fprint(w, out...)
+}
+
+func (t TranslationMap) Fprintf(w io.Writer, key string, a ...interface{}) (int, error) {
+	return fmt.Fprintf(w, t.Get(key), a...)
+}
+
+func (t TranslationMap) Fprintln(w io.Writer, a ...interface{}) (int, error) {
+	var out = make([]interface{}, len(a))
+
+	for i, arg := range a {
+		if key, ok := arg.(string); ok {
+			out[i] = t.Get(key)
+		} else {
+			out[i] = arg
+		}
+	}
+
+	return fmt.Fprintln(w, out...)
+}
+
+func (t TranslationMap) Sprint(a ...interface{}) string {
+	b := new(bytes.Buffer)
+	t.Fprint(b, a...)
+	return b.String()
+}
+
+func (t TranslationMap) Sprintf(key string, a ...interface{}) string {
+	b := new(bytes.Buffer)
+	t.Fprintf(b, key, a...)
+	return b.String()
+}
+
+func (t TranslationMap) Sprintln(a ...interface{}) string {
+	b := new(bytes.Buffer)
+	t.Fprintln(b, a...)
+	return b.String()
 }
 
 var _ Translation = (*TranslationMap)(nil)

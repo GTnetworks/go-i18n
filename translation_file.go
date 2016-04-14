@@ -19,17 +19,7 @@ var (
 	ErrUnknownFormat = errors.New("i18n: unknown file format")
 )
 
-type TranslationFile struct {
-	keys map[string]string
-	lang language.Tag
-}
-
-func NewTranslationFile(name, lang string) (t *TranslationFile, err error) {
-	t = new(TranslationFile)
-	if t.lang, err = language.Parse(lang); err != nil {
-		return
-	}
-
+func NewTranslationFile(lang language.Tag, name string) (t TranslationMap, err error) {
 	var (
 		f *os.File
 		b []byte
@@ -46,33 +36,45 @@ func NewTranslationFile(name, lang string) (t *TranslationFile, err error) {
 
 	switch strings.ToLower(filepath.Ext(name)) {
 	case ".js", ".json":
-		err = t.parseJSON(lang, b)
+		return ParseJSON(lang, b)
 	case ".tml", ".toml", ".conf":
-		err = t.parseTOML(lang, b)
+		return ParseTOML(lang, b)
 	case ".yml", ".yaml":
-		err = t.parseYAML(lang, b)
+		return ParseYAML(lang, b)
 	default:
-		return nil, ErrUnknownFormat
+		err = ErrUnknownFormat
 	}
 
 	return
 }
 
-func (t *TranslationFile) parseJSON(lang string, b []byte) (err error) {
-	var k = make(map[string]interface{})
+// ParseJSON takes a JSON blob and tries to decode it as a TranslationMap.
+func ParseJSON(lang language.Tag, b []byte) (t TranslationMap, err error) {
+	var (
+		k = make(map[string]interface{})
+		m map[string]string
+	)
 
 	if err = json.Unmarshal(b, &k); err == nil {
-		t.keys, err = flatten(k)
+		if m, err = flatten(k); err == nil {
+			return NewMap(lang, m), nil
+		}
 	}
 
 	return
 }
 
-func (t *TranslationFile) parseTOML(lang string, b []byte) (err error) {
-	var k = make(map[string]interface{})
+// ParseTOML takes a TOML blob and tries to decode it as a TranslationMap.
+func ParseTOML(lang language.Tag, b []byte) (t TranslationMap, err error) {
+	var (
+		k = make(map[string]interface{})
+		m map[string]string
+	)
 
 	if err = toml.Unmarshal(b, &k); err == nil {
-		t.keys, err = flatten(k)
+		if m, err = flatten(k); err == nil {
+			return NewMap(lang, m), nil
+		}
 	}
 
 	return
@@ -81,54 +83,28 @@ func (t *TranslationFile) parseTOML(lang string, b []byte) (err error) {
 // Parse Ruby compatible i18n translations file, which is a (tree based)
 // key-value structure with the root keys as the language, see
 // http://guides.rubyonrails.org/i18n.html
-func (t *TranslationFile) parseYAML(lang string, b []byte) (err error) {
-	var k = make(map[string]map[string]interface{})
+func ParseYAML(lang language.Tag, b []byte) (t TranslationMap, err error) {
+	var (
+		k = make(map[string]map[string]interface{})
+		m map[string]string
+	)
 
 	if err = yaml.Unmarshal(b, &k); err == nil {
-		if in, ok := k[lang]; ok {
-			t.keys, err = flatten(in)
-		} else {
-			return fmt.Errorf("i18n: language %q not found", lang)
+		// Test if the full language is in the map, ie `en_US`.
+		if in, ok := k[lang.String()]; ok {
+			if m, err = flatten(in); err == nil {
+				return NewMap(lang, m), nil
+			}
 		}
+		// Test if the base language is in the map, ie `en`.
+		base, _ := lang.Base()
+		if in, ok := k[base.String()]; ok {
+			if m, err = flatten(in); err == nil {
+				return NewMap(lang, m), nil
+			}
+		}
+		err = fmt.Errorf("i18n: language %q not found", lang)
 	}
 
 	return
 }
-
-func (t TranslationFile) Format(key string, args ...interface{}) string {
-	return fmt.Sprintf(t.Get(key), args...)
-}
-
-func (t TranslationFile) Formats(keys []string, args ...interface{}) string {
-	if keys == nil {
-		return ""
-	}
-
-	var out = make([]string, len(keys))
-	for i, key := range keys {
-		out[i] = t.Get(key)
-	}
-
-	return fmt.Sprintf(strings.Join(out, " "), args...)
-}
-
-func (t TranslationFile) Get(key string) string {
-	if out, ok := t.keys[key]; ok {
-		return out
-	}
-	return key
-}
-
-func (t TranslationFile) Has(key string) bool {
-	return t.keys[key] != ""
-}
-
-func (t TranslationFile) Len() int {
-	return len(t.keys)
-}
-
-func (t TranslationFile) Tag() language.Tag {
-	return t.lang
-}
-
-var _ Translation = (*TranslationFile)(nil)
